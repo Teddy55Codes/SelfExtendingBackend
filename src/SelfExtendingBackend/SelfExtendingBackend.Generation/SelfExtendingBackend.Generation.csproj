@@ -8,6 +8,8 @@
 
     <ItemGroup>
       <PackageReference Include="FluentResults" Version="3.16.0" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+      <PackageReference Include="NuGet.Versioning" Version="6.11.1" />
       <PackageReference Include="OpenAI" Version="2.1.0-beta.1" />
       <PackageReference Include="System.Composition" Version="8.0.0" />
       <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
