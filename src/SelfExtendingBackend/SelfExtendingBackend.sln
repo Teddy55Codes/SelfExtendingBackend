@@ -1,8 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SelfExtendingBackend.Backend", "SelfExtendingBackend.Backend\SelfExtendingBackend.Backend.csproj", "{B2D0C3AA-BC39-44EF-B65B-178E94941F96}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SelfExtendingBackend.Frontend", "SelfExtendingBackend.Frontend\SelfExtendingBackend.Frontend.csproj", "{70EF0D35-C4F8-43B4-92FF-7E923A1DE023}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B2D0C3AA-BC39-44EF-B65B-178E94941F96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2D0C3AA-BC39-44EF-B65B-178E94941F96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2D0C3AA-BC39-44EF-B65B-178E94941F96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2D0C3AA-BC39-44EF-B65B-178E94941F96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70EF0D35-C4F8-43B4-92FF-7E923A1DE023}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70EF0D35-C4F8-43B4-92FF-7E923A1DE023}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70EF0D35-C4F8-43B4-92FF-7E923A1DE023}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70EF0D35-C4F8-43B4-92FF-7E923A1DE023}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
