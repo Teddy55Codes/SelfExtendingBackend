@@ -4,6 +4,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SelfExtendingBackend.Backen
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SelfExtendingBackend.Frontend", "SelfExtendingBackend.Frontend\SelfExtendingBackend.Frontend.csproj", "{70EF0D35-C4F8-43B4-92FF-7E923A1DE023}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SelfExtendingBackend.Generation", "SelfExtendingBackend.Generation\SelfExtendingBackend.Generation.csproj", "{CF1489CB-4238-4D2C-9521-2C0C2DE8086F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SelfExtendingBackend.Contract", "SelfExtendingBackend.Contract\SelfExtendingBackend.Contract.csproj", "{C684B085-97D2-4D38-9009-B37DDD9E407A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +22,13 @@ Global
 		{70EF0D35-C4F8-43B4-92FF-7E923A1DE023}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{70EF0D35-C4F8-43B4-92FF-7E923A1DE023}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{70EF0D35-C4F8-43B4-92FF-7E923A1DE023}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF1489CB-4238-4D2C-9521-2C0C2DE8086F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF1489CB-4238-4D2C-9521-2C0C2DE8086F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF1489CB-4238-4D2C-9521-2C0C2DE8086F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF1489CB-4238-4D2C-9521-2C0C2DE8086F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C684B085-97D2-4D38-9009-B37DDD9E407A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C684B085-97D2-4D38-9009-B37DDD9E407A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C684B085-97D2-4D38-9009-B37DDD9E407A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C684B085-97D2-4D38-9009-B37DDD9E407A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
