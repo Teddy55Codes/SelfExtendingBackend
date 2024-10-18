@@ -6,4 +6,8 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="RuntimeNuGetLoader" Version="0.2.0" />
+    </ItemGroup>
+
 </Project>
