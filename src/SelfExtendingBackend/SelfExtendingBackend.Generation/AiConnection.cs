@@ -18,7 +18,7 @@ public class AiConnection
 
                                                    ### C# Code Requirements:
                                                    1. Use the `IEndpoint` interface in your generated class witch has the following methods, for this add the using Statement for "SelfExtendingBackend.Contract" where this Interface is originally implemented:
-                                                      - `HttpContent Request(string body)` - This method should correctly handle requests based on whether a `body` is provided or not. If no `body` is expected, handle it accordingly (i.e., send an empty body or `null`).
+                                                      - `HttpContent Request(string? body)` - This method should correctly handle requests based on whether a `body` is provided or not. 
                                                       - `string Url { get; }` - This property should simply return the URL provided by the user in the prompt input (e.g., `"/xy/"`).
 
                                                    2. Add the `[Export(typeof(IEndpoint))]` attribute to the class definition for exporting the implementation.
@@ -77,14 +77,9 @@ public class AiConnection
 
     private readonly List<ChatMessage> _chatMessages = [];
 
-    private readonly ChatClient _client;
-
-    public AiConnection(ChatClient client)
-    {
-        this._client = new ChatClient(
-            model: "gpt-4o",
-            apiKey: SecretKey);
-    }
+    private readonly ChatClient _client = new(
+        model: "gpt-4o",
+        apiKey: SecretKey);
 
     public AiMessage GenerateCodeWithAi(string inputFromUser)
     {
