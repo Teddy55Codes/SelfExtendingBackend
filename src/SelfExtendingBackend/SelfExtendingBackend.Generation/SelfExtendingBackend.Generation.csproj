@@ -7,6 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="FluentResults" Version="3.16.0" />
+      <PackageReference Include="OpenAI" Version="2.1.0-beta.1" />
       <PackageReference Include="RuntimeNuGetLoader" Version="0.2.0" />
     </ItemGroup>
 
