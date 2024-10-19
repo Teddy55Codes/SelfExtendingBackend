@@ -1,13 +1,11 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
-using System.Threading.Tasks;
 using FluentResults;
 using Microsoft.AspNetCore.Routing.Patterns;
 using SelfExtendingBackend.Contract;
 using SelfExtendingBackend.Generation;
+using Microsoft.AspNetCore.ResponseCompression;
+using SelfExtendingBackend.Backend.Hubs;
+
 
 var options = new WebApplicationOptions
 {
@@ -16,7 +14,13 @@ var options = new WebApplicationOptions
 
 var builder = WebApplication.CreateBuilder(options);
 
+builder.Services.AddSignalR();
 
+builder.Services.AddResponseCompression(opts =>
+{
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+        ["application/octet-stream"]);
+});
 
 var executionPath = AppContext.BaseDirectory; // Use the actual runtime directory
 builder.Host.UseContentRoot(executionPath); // Set ContentRoot to runtime folder
@@ -41,6 +45,8 @@ app.UseCors("AllowAll");
 // Placeholder to store the new endpoint route
 var dynamicEndpoints = new RouteEndpointBuilder(
     context => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
+
+app.UseResponseCompression();
 
 app.UseRouting();
 
@@ -83,8 +89,6 @@ app.UseEndpoints(endpoints =>
     });
 });
 
-
-
 // Custom middleware to handle dynamic routing
 app.Use(async (context, next) =>
 {
@@ -101,6 +105,8 @@ app.Use(async (context, next) =>
         await next();
     }
 });
+
+app.MapHub<ComHub>("/ws");
 
 app.Run();
 
