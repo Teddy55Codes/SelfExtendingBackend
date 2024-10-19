@@ -33,12 +33,12 @@ public class LibraryBuilder
         
         dotNetCLI.Start();
         dotNetCLI.WaitForExit();
-        
-        var res = new Result();
+
+        Result res = Result.Ok();
         if (dotNetCLI.ExitCode != 0)
         {
             var error = dotNetCLI.StandardError.ReadToEnd();
-            res.Errors.Add(new Error(error));
+            res = Result.Fail(error);
             Console.WriteLine($"error: {error}");
             Directory.Delete(_aiMessage.Name, true);
         }
