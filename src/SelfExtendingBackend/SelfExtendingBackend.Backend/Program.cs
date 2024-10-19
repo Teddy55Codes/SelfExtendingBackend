@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FluentResults;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Routing.Patterns;
 using SelfExtendingBackend.Backend;
 using SelfExtendingBackend.Contract;
@@ -26,6 +27,11 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddResponseCompression(opts =>
+{
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+        ["application/octet-stream"]);
+});
 
 var app = builder.Build();
 
