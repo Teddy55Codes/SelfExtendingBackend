@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SelfExtendingBackend.Genera
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SelfExtendingBackend.Contract", "SelfExtendingBackend.Contract\SelfExtendingBackend.Contract.csproj", "{C684B085-97D2-4D38-9009-B37DDD9E407A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SelfExtendingBackend.Frontend", "SelfExtendingBackend.Frontend\SelfExtendingBackend.Frontend.csproj", "{65CBF9D5-B954-44CE-A79F-1F9E51560ECF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{C684B085-97D2-4D38-9009-B37DDD9E407A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C684B085-97D2-4D38-9009-B37DDD9E407A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C684B085-97D2-4D38-9009-B37DDD9E407A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65CBF9D5-B954-44CE-A79F-1F9E51560ECF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65CBF9D5-B954-44CE-A79F-1F9E51560ECF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65CBF9D5-B954-44CE-A79F-1F9E51560ECF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65CBF9D5-B954-44CE-A79F-1F9E51560ECF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
