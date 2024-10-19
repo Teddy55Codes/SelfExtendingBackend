@@ -14,8 +14,12 @@ public class AiConnection
 
 
     private const string GenerateCodeInstruction = """
-                                                   Generate ONLY WORKING .NET 8 C# code THAT DOES NOT NEED ANY FURTHER CHANGES (NOT PLACEHOLDERS) and a separate JSON file for dependencies based on the following requirements, with a specific structure for output to allow easy parsing.
-
+                                                   You are a Senior Developer with extensive experience in developing .NET 8 C# applications. Generate ONLY WORKING .NET 8 C# code THAT DOES NOT NEED ANY FURTHER CHANGES (NOT PLACEHOLDERS) and a separate JSON file for dependencies based on the following requirements, with a specific structure for output to allow easy parsing.
+                                                   
+                                                   
+                                                   ### Chain of Thought Planning:
+                                                   DO THE PLANNING STEP BY STEP AND THEN START TO CODE.
+                                                   
                                                    ### C# Code Requirements:
                                                    1. Use the `IEndpoint` interface in your generated class witch has the following methods, for this add the using Statement for "SelfExtendingBackend.Contract" where this Interface is originally implemented:
                                                       - `HttpContent Request(string? body)` - This method should correctly handle requests based on whether a `body` is provided or not. 
@@ -23,8 +27,11 @@ public class AiConnection
 
                                                    2. Add the `[Export(typeof(IEndpoint))]` attribute to the class definition for exporting the implementation. Use System.Composition version 8.0.0 for that.
 
-                                                   3. The code must be syntactically valid C# and ready for direct use.
+                                                   3. The code must be syntactically valid C# .Net 8 and ready for direct use.
 
+                                                   ### Detailed Code Comments:
+                                                   Add detailed code comments above each method or complex logic to explain the purpose and functionality.
+                                                   
                                                    ### JSON Dependencies Requirements:
                                                    1. Return a separate JSON file containing the necessary dependencies, structured as `"package_name": "version"`.
                                                    2. Use the following format for the JSON:
@@ -65,7 +72,14 @@ public class AiConnection
                                                    3. The `Request` method should handle cases where a body is or is not provided, based on the input prompt.
                                                    4. Handle optional body scenarios appropriately in the `Request` method, sending `null` or an empty body when no body is required.
 
-                                                   Ensure that the generated C# code works as described, with dependencies specified separately in a well-formatted JSON file and ensure the output follows the format for easy parsing.
+                                                   ### **Negative Prompt Instructions:**
+                                                   - **Prohibit Placeholders:** DO NOT USE OR INCLUDE PLACEHOLDERS`/* TODO */`, `// FIXME`, `// TODO: Implement`, `// example.com` OR SIMILAR COMMENTS OR URL's within the code.
+                                                   - **Ensure Completeness:** The generated C# code must be fully functional and complete, requiring no further modifications or additions.
+                                                   - **Avoid Crippling Constructs:** Do not use incomplete code constructs that would prevent the code from compiling or running as intended.
+                                                   - **No Placeholder Variables or Methods:** All variables and methods should be fully implemented with appropriate logic and not left incomplete or templated.
+                                                   - **Final Code Verification:** Ensure that the entire codebase is ready for deployment without the need for any manual intervention to replace or remove placeholders.
+                                                   
+                                                   Ensure that the generated C# code works as described, with dependencies specified separately in a well-formatted JSON file, and that the output follows the format for easy parsing. **Avoid using any placeholders; the code should be fully functional without requiring further changes.**
                                                    """;
 
     private const string SecretKey =
