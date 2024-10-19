@@ -23,9 +23,33 @@
     </MudAlert>
 }
 
+<MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="FetchUrls" Class="mt-4">
+    Fetch URLs
+</MudButton>
+
+@if (urlList != null && urlList.Any())
+{
+    <ul>
+        @foreach (var urlItem in urlList)
+        {
+            <li>
+                <MudLink Href="@($"http://localhost:5000{urlItem.Url}")" Target="_blank">@urlItem.Url</MudLink>
+
+            </li>
+        }
+    </ul>
+}
+
 @code {
     private string promptText;
     private string responseMessage;
+    private List<UrlItem> urlList = new();
+
+    // Class to hold the URL items
+    public class UrlItem
+    {
+        public string Url { get; set; }
+    }
 
     private async Task GeneratePrompt()
     {
@@ -43,10 +67,33 @@
         if (response.IsSuccessStatusCode)
         {
             responseMessage = await response.Content.ReadAsStringAsync();
+            // Fetch URLs after the POST request completes successfully
+            await FetchUrls();
         }
         else
         {
             responseMessage = "An error occurred: " + response.StatusCode;
+        }
+    }
+
+    private async Task FetchUrls()
+    {
+        // GET request to fetch the list of URLs
+        var response = await Http.GetAsync("http://localhost:5000/get-all-endpoints");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            
+            // Deserialize the JSON response to the list of UrlItem
+            urlList = System.Text.Json.JsonSerializer.Deserialize<List<UrlItem>>(jsonResponse, new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            });
+        }
+        else
+        {
+            responseMessage = "Failed to fetch URLs.";
         }
     }
 }

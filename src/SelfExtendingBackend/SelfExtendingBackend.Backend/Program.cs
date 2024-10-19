@@ -50,6 +50,8 @@ app.UseResponseCompression();
 
 app.UseRouting();
 
+var customEndpointsList = new List<IEndpoint>();
+
 app.UseEndpoints(endpoints =>
 {
     // First static endpoint: /new-endpoint (POST)
@@ -74,6 +76,7 @@ app.UseEndpoints(endpoints =>
         if (result.IsSuccess)
         {
             // Register a dynamic endpoint on-the-fly
+            customEndpointsList.Add(result.Value);
             dynamicEndpoints = new RouteEndpointBuilder(
                 async context =>
                 {
@@ -87,7 +90,14 @@ app.UseEndpoints(endpoints =>
             );
         }
     });
+
+    endpoints.MapGet("/get-all-endpoints", async context =>
+    {
+        await context.Response.WriteAsJsonAsync(customEndpointsList);
+    });
 });
+
+
 
 // Custom middleware to handle dynamic routing
 app.Use(async (context, next) =>
