@@ -14,14 +14,14 @@ public class AiConnection
 
 
     private const string GenerateCodeInstruction = """
-                                                   Generate C# code and a separate JSON file for dependencies based on the following requirements, with a specific structure for output to allow easy parsing.
+                                                   Generate .NET 8 C# code and a separate JSON file for dependencies based on the following requirements, with a specific structure for output to allow easy parsing.
 
                                                    ### C# Code Requirements:
                                                    1. Use the `IEndpoint` interface in your generated class witch has the following methods, for this add the using Statement for "SelfExtendingBackend.Contract" where this Interface is originally implemented:
                                                       - `HttpContent Request(string? body)` - This method should correctly handle requests based on whether a `body` is provided or not. 
                                                       - `string Url { get; }` - This property should simply return the URL provided by the user in the prompt input (e.g., `"/xy/"`).
 
-                                                   2. Add the `[Export(typeof(IEndpoint))]` attribute to the class definition for exporting the implementation.
+                                                   2. Add the `[Export(typeof(IEndpoint))]` attribute to the class definition for exporting the implementation. Use System.Composition version 8.0.0 for that.
 
                                                    3. The code must be syntactically valid C# and ready for direct use.
 
