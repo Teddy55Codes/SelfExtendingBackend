@@ -23,9 +23,7 @@
     </MudAlert>
 }
 
-<MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="FetchUrls" Class="mt-4">
-    Fetch URLs
-</MudButton>
+
 
 @if (urlList != null && urlList.Any())
 {
@@ -44,6 +42,14 @@
     private string promptText;
     private string responseMessage;
     private List<UrlItem> urlList = new();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        FetchUrls();
+        await base.OnInitializedAsync();
+    }
+
 
     // Class to hold the URL items
     public class UrlItem
@@ -90,6 +96,8 @@
             {
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
             });
+
+            StateHasChanged();
         }
         else
         {

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using FluentResults;
 using Microsoft.AspNetCore.Routing.Patterns;
+using SelfExtendingBackend.Backend;
 using SelfExtendingBackend.Contract;
 using SelfExtendingBackend.Generation;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -50,7 +51,7 @@ app.UseResponseCompression();
 
 app.UseRouting();
 
-var customEndpointsList = new List<IEndpoint>();
+var customEndpointsList = new List<EntpointDTO>();
 
 app.UseEndpoints(endpoints =>
 {
@@ -76,7 +77,7 @@ app.UseEndpoints(endpoints =>
         if (result.IsSuccess)
         {
             // Register a dynamic endpoint on-the-fly
-            customEndpointsList.Add(result.Value);
+            customEndpointsList.Add(new EntpointDTO() {URL=result.Value.Url, Promt=inputString});
             dynamicEndpoints = new RouteEndpointBuilder(
                 async context =>
                 {
