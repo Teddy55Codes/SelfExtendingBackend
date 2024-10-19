@@ -17,7 +17,6 @@ var options = new WebApplicationOptions
 var builder = WebApplication.CreateBuilder(options);
 
 
-
 var executionPath = AppContext.BaseDirectory; // Use the actual runtime directory
 builder.Host.UseContentRoot(executionPath); // Set ContentRoot to runtime folder
 
@@ -44,6 +43,8 @@ var dynamicEndpoints = new RouteEndpointBuilder(
 
 app.UseRouting();
 
+var customEndpointsList = new List<IEndpoint>();
+
 app.UseEndpoints(endpoints =>
 {
     // First static endpoint: /new-endpoint (POST)
@@ -68,6 +69,7 @@ app.UseEndpoints(endpoints =>
         if (result.IsSuccess)
         {
             // Register a dynamic endpoint on-the-fly
+            customEndpointsList.Add(result.Value);
             dynamicEndpoints = new RouteEndpointBuilder(
                 async context =>
                 {
@@ -81,8 +83,12 @@ app.UseEndpoints(endpoints =>
             );
         }
     });
-});
 
+    endpoints.MapGet("/get-all-endpoints", async context =>
+    {
+        await context.Response.WriteAsJsonAsync(customEndpointsList);
+    });
+});
 
 
 // Custom middleware to handle dynamic routing
