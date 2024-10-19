@@ -7,7 +7,6 @@ using SelfExtendingBackend.Generation;
 using Microsoft.AspNetCore.ResponseCompression;
 using SelfExtendingBackend.Backend.Hubs;
 
-
 var options = new WebApplicationOptions
 {
     ContentRootPath = AppDomain.CurrentDomain.BaseDirectory // Set to actual runtime folder in bin/Debug
@@ -43,13 +42,12 @@ var app = builder.Build();
 // Enable CORS globally
 app.UseCors("AllowAll");
 
-// Placeholder to store the new endpoint route
-var dynamicEndpoints = new RouteEndpointBuilder(
-    context => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
-
 app.UseResponseCompression();
 
 app.UseRouting();
+
+// List to store all dynamically registered endpoints
+var dynamicEndpointsList = new List<RouteEndpointBuilder>();
 
 var customEndpointsList = new List<EntpointDTO>();
 
@@ -71,14 +69,15 @@ app.UseEndpoints(endpoints =>
         // Store the input value in a variable
         var inputString = requestBody.Value;
 
-        // call method from sven
+        // Call method from sven
         var endpointGenerator = new EndpointGenerator();
         Result<IEndpoint> result = endpointGenerator.GenerateEndpoint(inputString);
         if (result.IsSuccess)
         {
             // Register a dynamic endpoint on-the-fly
-            customEndpointsList.Add(new EntpointDTO() {URL=result.Value.Url, Promt=inputString});
-            dynamicEndpoints = new RouteEndpointBuilder(
+            customEndpointsList.Add(new EntpointDTO() { URL = result.Value.Url, Promt = inputString });
+
+            var dynamicEndpoint = new RouteEndpointBuilder(
                 async context =>
                 {
                     using var reader = new StreamReader(context.Request.Body);
@@ -89,6 +88,9 @@ app.UseEndpoints(endpoints =>
                 RoutePatternFactory.Parse(result.Value.Url),
                 0
             );
+
+            // Add the newly created endpoint to the list
+            dynamicEndpointsList.Add(dynamicEndpoint);
         }
     });
 
@@ -98,23 +100,24 @@ app.UseEndpoints(endpoints =>
     });
 });
 
-
-
 // Custom middleware to handle dynamic routing
 app.Use(async (context, next) =>
 {
-    var endpoint = dynamicEndpoints.Build();
-    var routeEndpoint = endpoint as RouteEndpoint;
+    // Loop through all dynamically created endpoints
+    foreach (var dynamicEndpointBuilder in dynamicEndpointsList)
+    {
+        var endpoint = dynamicEndpointBuilder.Build();
+        var routeEndpoint = endpoint as RouteEndpoint;
 
-    // If the request matches the dynamic endpoint path, execute it
-    if (context.Request.Path == routeEndpoint?.RoutePattern.RawText)
-    {
-        await routeEndpoint?.RequestDelegate(context);
+        // If the request matches the dynamic endpoint path, execute it
+        if (context.Request.Path == routeEndpoint?.RoutePattern.RawText)
+        {
+            await routeEndpoint?.RequestDelegate(context);
+            return; // Stop further processing if a matching endpoint is found
+        }
     }
-    else
-    {
-        await next();
-    }
+
+    await next(); // Continue to the next middleware if no dynamic endpoint matched
 });
 
 app.MapHub<ComHub>("/ws");
