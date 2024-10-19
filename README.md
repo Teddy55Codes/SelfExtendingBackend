@@ -6,5 +6,5 @@ Simply let AI create endpoints for you.
 ## Demo
 ![demo gif](md-resources/Demo.gif)
 
-## Architectur
-![Architectur jpg](md-resources/Screenshot 2024-10-19 122600.gif)
+## Architecture
+![Architecture png](md-resources/ArchitectureDiagram.png)
