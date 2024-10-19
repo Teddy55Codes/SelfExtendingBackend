@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing.Patterns;
+using SelfExtendingBackend.Contract;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -35,13 +36,14 @@ app.UseEndpoints(endpoints =>
         var inputString = requestBody.Value;
         
         // call method from sven
-
+        IEndpoint endpoint; 
+        
+        
         // Register a dynamic endpoint on-the-fly
         dynamicEndpoints = new RouteEndpointBuilder(
             async context =>
-                await context.Response.WriteAsync(
-                    $"This is the new dynamic endpoint! The stored value is: {inputString}"),
-            RoutePatternFactory.Parse("/new-new-endpoint"),
+                await endpoint.Request(inputString),
+            RoutePatternFactory.Parse(endpoint.Url),
             0
         );
     });
