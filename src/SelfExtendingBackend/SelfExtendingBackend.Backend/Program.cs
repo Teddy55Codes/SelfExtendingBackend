@@ -4,10 +4,24 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 using System.Threading.Tasks;
+using FluentResults;
 using Microsoft.AspNetCore.Routing.Patterns;
 using SelfExtendingBackend.Contract;
+using SelfExtendingBackend.Generation;
 
-var builder = WebApplication.CreateBuilder(args);
+var options = new WebApplicationOptions
+{
+    ContentRootPath = AppDomain.CurrentDomain.BaseDirectory // Set to actual runtime folder in bin/Debug
+};
+
+var builder = WebApplication.CreateBuilder(options);
+
+
+
+var executionPath = AppContext.BaseDirectory; // Use the actual runtime directory
+builder.Host.UseContentRoot(executionPath); // Set ContentRoot to runtime folder
+
+
 var app = builder.Build();
 
 
@@ -31,21 +45,22 @@ app.UseEndpoints(endpoints =>
             await context.Response.WriteAsync("Invalid input. Please provide a valid 'Value'.");
             return;
         }
-        
+
         // Store the input value in a variable
         var inputString = requestBody.Value;
-        
+
         // call method from sven
-        IEndpoint endpoint; 
-        
-        
-        // Register a dynamic endpoint on-the-fly
-        dynamicEndpoints = new RouteEndpointBuilder(
-            async context =>
-                await endpoint.Request(inputString),
-            RoutePatternFactory.Parse(endpoint.Url),
-            0
-        );
+        var endpointGenerator = new EndpointGenerator();
+        Result<IEndpoint> result = endpointGenerator.GenerateEndpoint(inputString);
+        if (result.IsSuccess)
+        {
+            // Register a dynamic endpoint on-the-fly
+            dynamicEndpoints = new RouteEndpointBuilder(
+                async context => await context.Response.WriteAsync(await result.Value.Request(inputString).ReadAsStringAsync()) ,
+                RoutePatternFactory.Parse(result.Value.Url),
+                0
+            );
+        }
     });
 });
 
