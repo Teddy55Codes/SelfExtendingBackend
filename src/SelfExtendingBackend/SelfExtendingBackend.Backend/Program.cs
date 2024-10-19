@@ -6,6 +6,8 @@ using SelfExtendingBackend.Contract;
 using SelfExtendingBackend.Generation;
 using Microsoft.AspNetCore.ResponseCompression;
 using SelfExtendingBackend.Backend.Hubs;
+using Microsoft.AspNetCore.ResponseCompression;
+using SelfExtendingBackend.Backend.Hubs;
 
 
 var options = new WebApplicationOptions
@@ -37,11 +39,26 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddSignalR();
+
+builder.Services.AddResponseCompression(opts =>
+{
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+        ["application/octet-stream"]);
+});
 
 var app = builder.Build();
 
 // Enable CORS globally
 app.UseCors("AllowAll");
+
+app.UseResponseCompression();
+
+app.MapHub<ComHub>("/chathub");
+
+ComHub comHub = app.Services.GetRequiredService<ComHub>();
+
+comHub.SendMessage("Hello World!");
 
 // Placeholder to store the new endpoint route
 var dynamicEndpoints = new RouteEndpointBuilder(
