@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Routing.Patterns;
 using SelfExtendingBackend.Backend;
 using SelfExtendingBackend.Contract;
 using SelfExtendingBackend.Generation;
-using Microsoft.AspNetCore.ResponseCompression;
-using SelfExtendingBackend.Backend.Hubs;
 
 var options = new WebApplicationOptions
 {
@@ -13,14 +11,6 @@ var options = new WebApplicationOptions
 };
 
 var builder = WebApplication.CreateBuilder(options);
-
-builder.Services.AddSignalR();
-
-builder.Services.AddResponseCompression(opts =>
-{
-    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
-        ["application/octet-stream"]);
-});
 
 var executionPath = AppContext.BaseDirectory; // Use the actual runtime directory
 builder.Host.UseContentRoot(executionPath); // Set ContentRoot to runtime folder
@@ -119,8 +109,6 @@ app.Use(async (context, next) =>
 
     await next(); // Continue to the next middleware if no dynamic endpoint matched
 });
-
-app.MapHub<ComHub>("/ws");
 
 app.Run();
 
