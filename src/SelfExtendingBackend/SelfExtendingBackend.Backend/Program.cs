@@ -23,7 +23,10 @@ builder.Services.AddCors(options =>
     {
         policy.AllowAnyOrigin()
             .AllowAnyMethod()
-            .AllowAnyHeader();
+            .AllowAnyHeader()
+            .SetIsOriginAllowed(_ => true) // Allows requests from any origin
+            .WithExposedHeaders("Access-Control-Allow-Origin")
+            .WithExposedHeaders("Access-Control-Allow-Methods");
     });
 });
 
@@ -35,11 +38,8 @@ builder.Services.AddResponseCompression(opts =>
 
 var app = builder.Build();
 
-// Enable CORS globally
-app.UseCors("AllowAll");
-
+app.UseCors("AllowAll"); // Enable CORS first
 app.UseResponseCompression();
-
 app.UseRouting();
 
 // List to store all dynamically registered endpoints
