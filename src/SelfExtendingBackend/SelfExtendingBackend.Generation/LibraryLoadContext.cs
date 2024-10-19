@@ -7,13 +7,15 @@ public class LibraryLoadContext : AssemblyLoadContext
 {
     private readonly AssemblyDependencyResolver _resolver;
 
-    public LibraryLoadContext(string pluginPath) 
+    public LibraryLoadContext(string libraryPath)
     {
-        _resolver = new AssemblyDependencyResolver(pluginPath);
+        _resolver = new AssemblyDependencyResolver(libraryPath);
     }
 
     protected override Assembly Load(AssemblyName assemblyName)
     {
+        if (assemblyName.Name == $"{nameof(SelfExtendingBackend)}.{nameof(Contract)}") return null!;
+        
         string assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName)!;
         return assemblyPath != null! ? LoadFromAssemblyPath(assemblyPath) : null!;
     }

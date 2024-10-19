@@ -12,19 +12,16 @@ public class LibraryLoader
     public LibraryLoader(string libraryName, string libraryPath)
     {
         _libraryName = libraryName;
-        _libraryPath = libraryPath;
+        _libraryPath =  Path.Combine(libraryPath, "bin/Debug/net8.0");
     }
 
-    public void LoadLibrary()
+    public IEndpoint LoadLibrary()
     {
-        var libraryLoadContext = new LibraryLoadContext(_libraryPath);
+        var libraryLoadContext = new LibraryLoadContext(Path.Combine(_libraryPath, $"{_libraryName}.dll"));
         Assembly libraryAssembly = libraryLoadContext.LoadFromAssemblyName(new AssemblyName(_libraryName));
         
         var configuration = new ContainerConfiguration().WithAssembly(libraryAssembly);
-        using (var container = configuration.CreateContainer())
-        {
-            var library = container.GetExport<IEndpoint>();
-            Console.WriteLine(library.Url); 
-        }
+        using var container = configuration.CreateContainer();
+        return container.GetExport<IEndpoint>();
     }
 }

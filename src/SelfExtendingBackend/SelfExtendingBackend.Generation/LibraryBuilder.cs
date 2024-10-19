@@ -2,25 +2,34 @@ using System.Diagnostics;
 using System.Xml;
 using FluentResults;
 using NuGet.Versioning;
+using SelfExtendingBackend.Contract;
 
 namespace SelfExtendingBackend.Generation;
 
 public class LibraryBuilder
 {
-    public XmlDocument _projectFile;
+    private readonly AiMessage _aiMessage;
 
-    public Result BuildProject(string libraryName, string codeContent)
+    public LibraryBuilder(AiMessage aiMessage)
     {
-        Directory.CreateDirectory(libraryName);
-        File.WriteAllText(Path.Combine(libraryName, $"{libraryName}.csproj"), _projectFile.InnerXml);
-        File.WriteAllText(Path.Combine(libraryName, $"{libraryName}.cs"), codeContent);
+        _aiMessage = aiMessage;
+    }
+
+    public Result BuildProject()
+    {
+        var csprojContent = AddPackageDependencies(_aiMessage.Dependencies);
+        
+        Directory.CreateDirectory(_aiMessage.Name);
+        
+        File.WriteAllText(Path.Combine(_aiMessage.Name, $"{_aiMessage.Name}.csproj"), csprojContent);
+        File.WriteAllText(Path.Combine(_aiMessage.Name, $"{_aiMessage.Name}.cs"), _aiMessage.Code);
         
         Process dotNetCLI = new Process();
         dotNetCLI.StartInfo.FileName = "dotnet";
         dotNetCLI.StartInfo.RedirectStandardOutput = true;
         dotNetCLI.StartInfo.RedirectStandardError = true;
         dotNetCLI.StartInfo.UseShellExecute = false;
-        dotNetCLI.StartInfo.Arguments = $"Build {libraryName}/{libraryName}.csproj";
+        dotNetCLI.StartInfo.Arguments = $"build {_aiMessage.Name}/{_aiMessage.Name}.csproj";
         
         dotNetCLI.Start();
         dotNetCLI.WaitForExit();
@@ -28,12 +37,15 @@ public class LibraryBuilder
         var res = new Result();
         if (dotNetCLI.ExitCode != 0)
         {
-            res.Errors.Add(new Error(dotNetCLI.StandardError.ReadToEnd()));
+            var error = dotNetCLI.StandardError.ReadToEnd();
+            res.Errors.Add(new Error(error));
+            Console.WriteLine($"error: {error}");
+            Directory.Delete(_aiMessage.Name, true);
         }
         return res;
     }
     
-    public void AddPackageDependencies(List<(string id, NuGetVersion version)> dependencies)
+    private string AddPackageDependencies(List<(string id, NuGetVersion version)> dependencies)
     {
         var doc = new XmlDocument();
         doc.Load("Resources/CsprojTemplate.xml");
@@ -42,12 +54,14 @@ public class LibraryBuilder
 
         foreach (var dependency in dependencies)
         {
+            if (dependency.id == $"{nameof(SelfExtendingBackend)}.{nameof(Contract)}") continue;
+            
             XmlElement projectReference = doc.CreateElement("PackageReference");
             projectReference.SetAttribute("Include", dependency.id);
             projectReference.SetAttribute("Version", dependency.version.ToString());
             itemGroupNode.AppendChild(projectReference);
         }
 
-        _projectFile = doc;
+        return doc.InnerXml;
     }
 }
