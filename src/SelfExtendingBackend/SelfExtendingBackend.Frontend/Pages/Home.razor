@@ -1,5 +1,5 @@
 ﻿@page "/"
-@inject HttpClient Http  
+@inject HttpClient Http
 
 <MudText Typo="Typo.h3">Prompt Generator</MudText>
 
@@ -29,8 +29,16 @@
 
     private async Task GeneratePrompt()
     {
-        var request = new { Value = promptText };  // Ensure the correct structure of the payload
-        var response = await Http.PostAsJsonAsync("https://localhost:7037/new-endpoint", request);  // Send the POST request
+        var request = new { Value = promptText };
+
+        // Serialize the object to a JSON string
+        var jsonRequest = System.Text.Json.JsonSerializer.Serialize(request);
+
+        // Create the content for the POST request
+        var content = new StringContent(jsonRequest, System.Text.Encoding.UTF8, "application/json");
+
+        // Send the POST request
+        var response = await Http.PostAsync("http://localhost:5000/new-endpoint", content);
 
         if (response.IsSuccessStatusCode)
         {
@@ -38,7 +46,7 @@
         }
         else
         {
-            responseMessage = "An error occurred.";
+            responseMessage = "An error occurred: " + response.StatusCode;
         }
     }
 }
