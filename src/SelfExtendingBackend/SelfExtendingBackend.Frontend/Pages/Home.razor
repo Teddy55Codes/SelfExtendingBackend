@@ -1,8 +1,6 @@
 ﻿@page "/"
 @inject HttpClient Http
 
-<MudText Typo="Typo.h3">Prompt Generator</MudText>
-
 <MudPaper Class="pa-4">
     <MudGrid>
         <MudItem xs="12" md="9">
@@ -14,33 +12,56 @@
             </MudButton>
         </MudItem>
     </MudGrid>
-</MudPaper>
 
-@if (responseMessage is not null)
+
+@if (loading)
 {
-    <MudAlert Severity="Severity.Success" Class="mt-3">
-        <strong>Response: </strong>@responseMessage
+    <MudProgressLinear Color="Color.Secondary" Indeterminate="true" Size="Size.Medium" />
+}
+
+
+@if (success)
+{
+<MudAlert Severity="Severity.Success" Class="mt-3">
+    <strong>Success </strong>
+</MudAlert>
+}
+
+@if (errorMessage is not null)
+{
+    <MudAlert Severity="Severity.Error" Class="mt-3">
+        <strong>Error: </strong>@errorMessage
     </MudAlert>
 }
 
-
-
 @if (urlList != null && urlList.Any())
 {
-    <ul>
+    <MudGrid>
         @foreach (var urlItem in urlList)
         {
-            <li>
-                <MudLink Href="@($"http://localhost:5000{urlItem.Url}")" Target="_blank">@urlItem.Url</MudLink>
-
-            </li>
+            <MudItem xs="12" md="6">
+                <MudCard>
+                    <MudCardContent>
+                        <MudText Typo="Typo.body1">Prompt: @urlItem.Promt</MudText>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="@($"http://localhost:5000{urlItem.Url}")" Target="_blank">
+                            Go to @urlItem.Url
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
         }
-    </ul>
+    </MudGrid>
 }
+
+</MudPaper>
 
 @code {
     private string promptText;
-    private string responseMessage;
+    private string errorMessage;
+    private bool success;
+    private bool loading;
     private List<UrlItem> urlList = new();
 
 
@@ -55,10 +76,15 @@
     public class UrlItem
     {
         public string Url { get; set; }
+        public string Promt { get; set; }  // Adjusted to match the JSON "promt" field
     }
 
     private async Task GeneratePrompt()
     {
+        errorMessage = null;
+        success = false;
+        loading = true;
+        
         var request = new { Value = promptText };
 
         // Serialize the object to a JSON string
@@ -72,14 +98,15 @@
 
         if (response.IsSuccessStatusCode)
         {
-            responseMessage = await response.Content.ReadAsStringAsync();
+            success = true;
             // Fetch URLs after the POST request completes successfully
             await FetchUrls();
         }
         else
         {
-            responseMessage = "An error occurred: " + response.StatusCode;
+            errorMessage = "An error occurred: " + response.StatusCode;
         }
+        loading = false;
     }
 
     private async Task FetchUrls()
@@ -91,7 +118,7 @@
         {
             var jsonResponse = await response.Content.ReadAsStringAsync();
             
-            // Deserialize the JSON response to the list of UrlItem
+            // Deserialize the JSON response to the list of UrlItem, now including the "promt"
             urlList = System.Text.Json.JsonSerializer.Deserialize<List<UrlItem>>(jsonResponse, new System.Text.Json.JsonSerializerOptions
             {
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
@@ -101,7 +128,7 @@
         }
         else
         {
-            responseMessage = "Failed to fetch URLs.";
+            errorMessage = "Failed to fetch URLs.";
         }
     }
 }
