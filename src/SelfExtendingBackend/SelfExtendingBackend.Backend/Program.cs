@@ -1,44 +1,131 @@
-var builder = WebApplication.CreateBuilder(args);
+using System.Text.Json;
+using FluentResults;
+using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.Routing.Patterns;
+using SelfExtendingBackend.Backend;
+using SelfExtendingBackend.Contract;
+using SelfExtendingBackend.Generation;
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+var options = new WebApplicationOptions
+{
+    ContentRootPath = AppDomain.CurrentDomain.BaseDirectory // Set to actual runtime folder in bin/Debug
+};
+
+var builder = WebApplication.CreateBuilder(options);
+
+var executionPath = AppContext.BaseDirectory; // Use the actual runtime directory
+builder.Host.UseContentRoot(executionPath); // Set ContentRoot to runtime folder
+
+// Enable CORS to allow any origin, method, and headers.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+
+builder.Services.AddResponseCompression(opts =>
+{
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+        ["application/octet-stream"]);
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Enable CORS globally
+app.UseCors("AllowAll");
+
+app.UseResponseCompression();
+
+app.UseRouting();
+
+// List to store all dynamically registered endpoints
+var dynamicEndpointsList = new List<RouteEndpointBuilder>();
+
+var customEndpointsList = new List<EntpointDTO>();
+
+app.UseEndpoints(endpoints =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
+    // First static endpoint: /new-endpoint (POST)
+    endpoints.MapPost("/new-endpoint", async context =>
     {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast")
-    .WithOpenApi();
+        // Parse the input from the request body
+        var requestBody = await JsonSerializer.DeserializeAsync<InputData>(context.Request.Body);
+
+        if (requestBody == null || string.IsNullOrWhiteSpace(requestBody.Value))
+        {
+            context.Response.StatusCode = 400; // Bad request
+            await context.Response.WriteAsync("Invalid input. Please provide a valid 'Value'.");
+            return;
+        }
+
+        // Store the input value in a variable
+        var inputString = requestBody.Value;
+
+        // Call method from sven
+        var endpointGenerator = new EndpointGenerator();
+        Result<(IEndpoint, AiMessage)> result = endpointGenerator.GenerateEndpoint(inputString);
+        if (result.IsSuccess)
+        {
+            // Register a dynamic endpoint on-the-fly
+            customEndpointsList.Add(new EntpointDTO()
+            {
+                ClassName = result.Value.Item2.Name,
+                Code = result.Value.Item2.Code,
+                Dependencies = result.Value.Item2.Dependencies.Select(t => t.packageId + ":" + t.version.ToString()).ToArray(),
+                URL = result.Value.Item1.Url, 
+                Promt = inputString
+            });
+
+            var dynamicEndpoint = new RouteEndpointBuilder(
+                async context =>
+                {
+                    using var reader = new StreamReader(context.Request.Body);
+                    var requestBodyString = await reader.ReadToEndAsync();
+                    await context.Response.BodyWriter.WriteAsync(await result.Value.Item1
+                        .Request(requestBodyString).ReadAsByteArrayAsync());
+                },
+                RoutePatternFactory.Parse(result.Value.Item1.Url),
+                0
+            );
+
+            // Add the newly created endpoint to the list
+            dynamicEndpointsList.Add(dynamicEndpoint);
+        }
+    });
+
+    endpoints.MapGet("/get-all-endpoints", async context =>
+    {
+        await context.Response.WriteAsJsonAsync(customEndpointsList);
+    });
+});
+
+// Custom middleware to handle dynamic routing
+app.Use(async (context, next) =>
+{
+    // Loop through all dynamically created endpoints
+    foreach (var dynamicEndpointBuilder in dynamicEndpointsList)
+    {
+        var endpoint = dynamicEndpointBuilder.Build();
+        var routeEndpoint = endpoint as RouteEndpoint;
+
+        // If the request matches the dynamic endpoint path, execute it
+        if (context.Request.Path == routeEndpoint?.RoutePattern.RawText)
+        {
+            await routeEndpoint?.RequestDelegate(context);
+            return; // Stop further processing if a matching endpoint is found
+        }
+    }
+
+    await next(); // Continue to the next middleware if no dynamic endpoint matched
+});
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+public class InputData
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    public string Value { get; set; } // The value sent in the POST request
 }

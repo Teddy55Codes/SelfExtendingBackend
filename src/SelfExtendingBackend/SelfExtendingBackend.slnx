@@ -1,4 +1,0 @@
-﻿<Solution>
-  <Project Path="SelfExtendingBackend.Backend\SelfExtendingBackend.Backend.csproj" Type="Classic C#" />
-  <Project Path="SelfExtendingBackend.Frontend\SelfExtendingBackend.Frontend.csproj" Type="Classic C#" />
-</Solution>
