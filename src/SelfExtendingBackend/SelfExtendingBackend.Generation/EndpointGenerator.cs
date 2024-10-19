@@ -5,7 +5,7 @@ namespace SelfExtendingBackend.Generation;
 
 public class EndpointGenerator
 {
-    public Result<IEndpoint> GenerateEndpoint(string prompt)
+    public Result<(IEndpoint, AiMessage)> GenerateEndpoint(string prompt)
     {
         var aiConnection = new AiConnection();
         AiMessage aiMessage = aiConnection.GenerateCodeWithAi(prompt);
@@ -18,7 +18,7 @@ public class EndpointGenerator
             if (result.IsFailed)
             {
                 aiMessage = aiConnection.FixCodeWithAi(result.Errors[0].Message);
-                if (retries > 10) return Result.Fail("Failed to Generate Endpoint");
+                if (retries > 5) return Result.Fail("Failed to Generate Endpoint");
                 retries++;
             }
             else
@@ -29,6 +29,6 @@ public class EndpointGenerator
 
         var libraryLoader = new LibraryLoader(aiMessage.Name, aiMessage.Name);
 
-        return Result.Ok(libraryLoader.LoadLibrary());
+        return Result.Ok((libraryLoader.LoadLibrary(), aiMessage));
     }
 }

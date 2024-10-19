@@ -4,7 +4,7 @@
 <MudPaper Class="pa-4">
     <MudGrid>
         <MudItem xs="12" md="9">
-            <MudTextField @bind-Value="promptText" Placeholder="Prompt..." Variant="Variant.Filled" FullWidth="true" />
+            <MudTextField @bind-Value="promptText" Placeholder="Prompt..." Variant="Variant.Filled" FullWidth="true"/>
         </MudItem>
         <MudItem xs="12" md="3">
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GeneratePrompt" FullWidth="true">
@@ -12,19 +12,18 @@
             </MudButton>
         </MudItem>
     </MudGrid>
-
 </MudPaper>
+
 @if (loading)
 {
-    <MudProgressLinear Color="Color.Secondary" Indeterminate="true" Size="Size.Medium" />
+    <MudProgressLinear Color="Color.Secondary" Indeterminate="true" Size="Size.Medium"/>
 }
-
 
 @if (success)
 {
-<MudAlert Severity="Severity.Success" Class="mt-3">
-    <strong>Success </strong>
-</MudAlert>
+    <MudAlert Severity="Severity.Success" Class="mt-3">
+        <strong>Success</strong>
+    </MudAlert>
 }
 
 @if (errorMessage is not null)
@@ -43,21 +42,33 @@
                 <MudItem xs="12" md="6">
                     <MudCard>
                         <MudCardContent>
-                            <MudText Typo="Typo.body1">Prompt: @urlItem.Promt</MudText>
+                            <MudText Typo="Typo.body1">Name: @urlItem.ClassName</MudText>
+                            <MudText Typo="Typo.body2">Prompt: @urlItem.Promt</MudText>
                         </MudCardContent>
                         <MudCardActions>
                             <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="@($"http://localhost:5000{urlItem.Url}")" Target="_blank">
                                 Go to @urlItem.Url
                             </MudButton>
                         </MudCardActions>
+                        <MudExpansionPanel Text="View Source Code">
+                            <MudText Typo="Typo.body2">
+                                <pre>@urlItem.Code</pre>
+                            </MudText>
+                        </MudExpansionPanel>
+                        <MudExpansionPanel Text="View Dependencies">
+                            @foreach (var dependency in urlItem.Dependencies)
+                            {
+                                <MudText Typo="Typo.body2">
+                                    <pre>@dependency</pre>
+                                </MudText>
+                            }
+                        </MudExpansionPanel>
                     </MudCard>
                 </MudItem>
             }
         </MudGrid>
     </MudPaper>
 }
-
-
 
 @code {
     private string promptText;
@@ -66,19 +77,20 @@
     private bool loading;
     private List<UrlItem> urlList = new();
 
-
     protected override async Task OnInitializedAsync()
     {
-        FetchUrls();
+        await FetchUrls();
         await base.OnInitializedAsync();
     }
 
-
-    // Class to hold the URL items
+// Class to hold the URL items
     public class UrlItem
     {
+        public string ClassName { get; set; }
         public string Url { get; set; }
-        public string Promt { get; set; }  // Adjusted to match the JSON "promt" field
+        public string Promt { get; set; }
+        public string Code { get; set; } // Added code to display formatted code
+        public List<string> Dependencies { get; set; } // Added dependencies list
     }
 
     private async Task GeneratePrompt()
@@ -86,41 +98,42 @@
         errorMessage = null;
         success = false;
         loading = true;
-        
+
         var request = new { Value = promptText };
 
-        // Serialize the object to a JSON string
+// Serialize the object to a JSON string
         var jsonRequest = System.Text.Json.JsonSerializer.Serialize(request);
 
-        // Create the content for the POST request
+// Create the content for the POST request
         var content = new StringContent(jsonRequest, System.Text.Encoding.UTF8, "application/json");
 
-        // Send the POST request
+// Send the POST request
         var response = await Http.PostAsync("http://localhost:5000/new-endpoint", content);
 
         if (response.IsSuccessStatusCode)
         {
             success = true;
-            // Fetch URLs after the POST request completes successfully
+// Fetch URLs after the POST request completes successfully
             await FetchUrls();
         }
         else
         {
             errorMessage = "An error occurred: " + response.StatusCode;
         }
+
         loading = false;
     }
 
     private async Task FetchUrls()
     {
-        // GET request to fetch the list of URLs
+// GET request to fetch the list of URLs
         var response = await Http.GetAsync("http://localhost:5000/get-all-endpoints");
 
         if (response.IsSuccessStatusCode)
         {
             var jsonResponse = await response.Content.ReadAsStringAsync();
-            
-            // Deserialize the JSON response to the list of UrlItem, now including the "promt"
+
+// Deserialize the JSON response to the list of UrlItem, including dependencies and source code
             urlList = System.Text.Json.JsonSerializer.Deserialize<List<UrlItem>>(jsonResponse, new System.Text.Json.JsonSerializerOptions
             {
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
@@ -133,4 +146,5 @@
             errorMessage = "Failed to fetch URLs.";
         }
     }
+
 }

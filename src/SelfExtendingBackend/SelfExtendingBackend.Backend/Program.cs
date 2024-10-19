@@ -67,21 +67,28 @@ app.UseEndpoints(endpoints =>
 
         // Call method from sven
         var endpointGenerator = new EndpointGenerator();
-        Result<IEndpoint> result = endpointGenerator.GenerateEndpoint(inputString);
+        Result<(IEndpoint, AiMessage)> result = endpointGenerator.GenerateEndpoint(inputString);
         if (result.IsSuccess)
         {
             // Register a dynamic endpoint on-the-fly
-            customEndpointsList.Add(new EntpointDTO() { URL = result.Value.Url, Promt = inputString });
+            customEndpointsList.Add(new EntpointDTO()
+            {
+                ClassName = result.Value.Item2.Name,
+                Code = result.Value.Item2.Code,
+                Dependencies = result.Value.Item2.Dependencies.Select(t => t.packageId + ":" + t.version.ToString()).ToArray(),
+                URL = result.Value.Item1.Url, 
+                Promt = inputString
+            });
 
             var dynamicEndpoint = new RouteEndpointBuilder(
                 async context =>
                 {
                     using var reader = new StreamReader(context.Request.Body);
                     var requestBodyString = await reader.ReadToEndAsync();
-                    await context.Response.BodyWriter.WriteAsync(await result.Value
+                    await context.Response.BodyWriter.WriteAsync(await result.Value.Item1
                         .Request(requestBodyString).ReadAsByteArrayAsync());
                 },
-                RoutePatternFactory.Parse(result.Value.Url),
+                RoutePatternFactory.Parse(result.Value.Item1.Url),
                 0
             );
 
