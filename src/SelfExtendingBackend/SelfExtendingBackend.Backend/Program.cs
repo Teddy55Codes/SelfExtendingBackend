@@ -54,11 +54,10 @@ app.UseCors("AllowAll");
 
 app.UseResponseCompression();
 
-app.MapHub<ComHub>("/chathub");
+ComHub comHub = new ComHub();
 
-ComHub comHub = app.Services.GetRequiredService<ComHub>();
+app.MapHub<ComHub>("/ws");
 
-comHub.SendMessage("Hello World!");
 
 // Placeholder to store the new endpoint route
 var dynamicEndpoints = new RouteEndpointBuilder(
@@ -109,6 +108,8 @@ app.UseEndpoints(endpoints =>
         }
     });
 
+    endpoints.MapGet("/SendSocket", (string message) => comHub.SendMessage("C", message));
+    
     endpoints.MapGet("/get-all-endpoints", async context =>
     {
         await context.Response.WriteAsJsonAsync(customEndpointsList);
@@ -133,8 +134,6 @@ app.Use(async (context, next) =>
         await next();
     }
 });
-
-app.MapHub<ComHub>("/ws");
 
 app.Run();
 

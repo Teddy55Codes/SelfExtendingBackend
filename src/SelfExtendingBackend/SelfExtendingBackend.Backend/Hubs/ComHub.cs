@@ -4,8 +4,8 @@ namespace SelfExtendingBackend.Backend.Hubs;
 
 public class ComHub : Hub
 {
-    public async Task SendMessage(string message)
+    public async Task SendMessage(string user, string message)
     {
-        await Clients.All.SendAsync(message);
+        await Clients.All.SendAsync("ReceiveMessage", user, message);
     }
 }

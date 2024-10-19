@@ -19,7 +19,7 @@
     protected async Task connect()
     {
         hubConnection = new HubConnectionBuilder()
-            .WithUrl(Navigation.ToAbsoluteUri("http://localhost:5000/ws"))
+            .WithUrl(Navigation.ToAbsoluteUri("http://localhost:5204/ws"))
             .Build();
 
         hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
