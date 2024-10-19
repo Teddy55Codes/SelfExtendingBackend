@@ -56,13 +56,21 @@ app.UseEndpoints(endpoints =>
         {
             // Register a dynamic endpoint on-the-fly
             dynamicEndpoints = new RouteEndpointBuilder(
-                async context => await context.Response.WriteAsync(await result.Value.Request(inputString).ReadAsStringAsync()) ,
+                async context =>
+                {
+                    using var reader = new StreamReader(context.Request.Body);
+                    var requestBodyString = await reader.ReadToEndAsync();
+                    await context.Response.BodyWriter.WriteAsync(await result.Value
+                        .Request(requestBodyString).ReadAsByteArrayAsync());
+                },
                 RoutePatternFactory.Parse(result.Value.Url),
                 0
             );
         }
     });
 });
+
+
 
 // Custom middleware to handle dynamic routing
 app.Use(async (context, next) =>

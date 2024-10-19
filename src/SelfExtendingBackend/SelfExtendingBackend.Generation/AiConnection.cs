@@ -14,7 +14,7 @@ public class AiConnection
 
 
     private const string GenerateCodeInstruction = """
-                                                   Generate .NET 8 C# code and a separate JSON file for dependencies based on the following requirements, with a specific structure for output to allow easy parsing.
+                                                   Generate ONLY WORKING .NET 8 C# code THAT DOES NOT NEED ANY FURTHER CHANGES (NOT PLACEHOLDERS) and a separate JSON file for dependencies based on the following requirements, with a specific structure for output to allow easy parsing.
 
                                                    ### C# Code Requirements:
                                                    1. Use the `IEndpoint` interface in your generated class witch has the following methods, for this add the using Statement for "SelfExtendingBackend.Contract" where this Interface is originally implemented:
