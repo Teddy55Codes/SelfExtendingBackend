@@ -1,7 +1,44 @@
 ﻿@page "/"
+@inject HttpClient Http  
 
-<PageTitle>Home</PageTitle>
+<MudText Typo="Typo.h3">Prompt Generator</MudText>
 
-<h1>Hello, world!</h1>
+<MudPaper Class="pa-4">
+    <MudGrid>
+        <MudItem xs="12" md="9">
+            <MudTextField @bind-Value="promptText" Placeholder="Prompt..." Variant="Variant.Filled" FullWidth="true" />
+        </MudItem>
+        <MudItem xs="12" md="3">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GeneratePrompt" FullWidth="true">
+                Generate
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
 
-Welcome to your new app.
+@if (responseMessage is not null)
+{
+    <MudAlert Severity="Severity.Success" Class="mt-3">
+        <strong>Response: </strong>@responseMessage
+    </MudAlert>
+}
+
+@code {
+    private string promptText;
+    private string responseMessage;
+
+    private async Task GeneratePrompt()
+    {
+        var request = new { Value = promptText };  // Ensure the correct structure of the payload
+        var response = await Http.PostAsJsonAsync("https://localhost:7037/new-endpoint", request);  // Send the POST request
+
+        if (response.IsSuccessStatusCode)
+        {
+            responseMessage = await response.Content.ReadAsStringAsync();
+        }
+        else
+        {
+            responseMessage = "An error occurred.";
+        }
+    }
+}

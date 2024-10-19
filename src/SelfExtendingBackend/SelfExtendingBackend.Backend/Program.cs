@@ -21,9 +21,22 @@ var builder = WebApplication.CreateBuilder(options);
 var executionPath = AppContext.BaseDirectory; // Use the actual runtime directory
 builder.Host.UseContentRoot(executionPath); // Set ContentRoot to runtime folder
 
+// Enable CORS to allow any origin, method, and headers.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+
 
 var app = builder.Build();
 
+// Enable CORS globally
+app.UseCors("AllowAll");
 
 // Placeholder to store the new endpoint route
 var dynamicEndpoints = new RouteEndpointBuilder(
