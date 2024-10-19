@@ -13,7 +13,7 @@
         </MudItem>
     </MudGrid>
 
-
+</MudPaper>
 @if (loading)
 {
     <MudProgressLinear Color="Color.Secondary" Indeterminate="true" Size="Size.Medium" />
@@ -36,26 +36,28 @@
 
 @if (urlList != null && urlList.Any())
 {
-    <MudGrid>
-        @foreach (var urlItem in urlList)
-        {
-            <MudItem xs="12" md="6">
-                <MudCard>
-                    <MudCardContent>
-                        <MudText Typo="Typo.body1">Prompt: @urlItem.Promt</MudText>
-                    </MudCardContent>
-                    <MudCardActions>
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="@($"http://localhost:5000{urlItem.Url}")" Target="_blank">
-                            Go to @urlItem.Url
-                        </MudButton>
-                    </MudCardActions>
-                </MudCard>
-            </MudItem>
-        }
-    </MudGrid>
+    <MudPaper Class="pa-4">
+        <MudGrid>
+            @foreach (var urlItem in urlList)
+            {
+                <MudItem xs="12" md="6">
+                    <MudCard>
+                        <MudCardContent>
+                            <MudText Typo="Typo.body1">Prompt: @urlItem.Promt</MudText>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="@($"http://localhost:5000{urlItem.Url}")" Target="_blank">
+                                Go to @urlItem.Url
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    </MudPaper>
 }
 
-</MudPaper>
+
 
 @code {
     private string promptText;
