@@ -1,0 +1,50 @@
+@page "/inputform"
+@using System.Net.Http
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<h3>Input Form</h3>
+
+<br>
+
+<RadzenTextBox @bind-Value="inputValue" Placeholder="Prompt plz." />
+
+<p>You wrote: @inputValue</p> <!-- Debugging output -->
+
+<RadzenButton Click="SubmitForm">Submit</RadzenButton>
+
+
+@code {
+    private string inputValue;
+    private string responseMessage;
+
+
+    private async Task SubmitForm()
+    {
+        if (!string.IsNullOrEmpty(inputValue))
+        {
+            try
+            {
+                // Example HTTP GET request
+                var response = await Http.GetAsync($"http://127.0.0.1:5204/api/example?query={inputValue}");
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    responseMessage = await response.Content.ReadAsStringAsync();
+                }
+                else
+                {
+                    responseMessage = "Request failed.";
+                }
+            }
+            catch (Exception ex)
+            {
+                responseMessage = $"Error: {ex.Message}";
+            }
+        }
+        else
+        {
+            responseMessage = "Please enter a value.";
+        }
+    }
+}
