@@ -47,60 +47,56 @@ var dynamicEndpointsList = new List<RouteEndpointBuilder>();
 
 var customEndpointsList = new List<EntpointDTO>();
 
-app.UseEndpoints(endpoints =>
+app.MapPost("/new-endpoint", async context =>
 {
-    // First static endpoint: /new-endpoint (POST)
-    endpoints.MapPost("/new-endpoint", async context =>
+    // Parse the input from the request body
+    var requestBody = await JsonSerializer.DeserializeAsync<InputData>(context.Request.Body);
+
+    if (requestBody == null || string.IsNullOrWhiteSpace(requestBody.Value))
     {
-        // Parse the input from the request body
-        var requestBody = await JsonSerializer.DeserializeAsync<InputData>(context.Request.Body);
+        context.Response.StatusCode = 400; // Bad request
+        await context.Response.WriteAsync("Invalid input. Please provide a valid 'Value'.");
+        return;
+    }
 
-        if (requestBody == null || string.IsNullOrWhiteSpace(requestBody.Value))
+    // Store the input value in a variable
+    var inputString = requestBody.Value;
+
+    // Call method from sven
+    var endpointGenerator = new EndpointGenerator();
+    Result<(IEndpoint, AiMessage)> result = endpointGenerator.GenerateEndpoint(inputString);
+    if (result.IsSuccess)
+    {
+        // Register a dynamic endpoint on-the-fly
+        customEndpointsList.Add(new EntpointDTO()
         {
-            context.Response.StatusCode = 400; // Bad request
-            await context.Response.WriteAsync("Invalid input. Please provide a valid 'Value'.");
-            return;
-        }
+            ClassName = result.Value.Item2.Name,
+            Code = result.Value.Item2.Code,
+            Dependencies = result.Value.Item2.Dependencies.Select(t => t.packageId + ":" + t.version.ToString()).ToArray(),
+            URL = result.Value.Item1.Url, 
+            Promt = inputString
+        });
 
-        // Store the input value in a variable
-        var inputString = requestBody.Value;
-
-        // Call method from sven
-        var endpointGenerator = new EndpointGenerator();
-        Result<(IEndpoint, AiMessage)> result = endpointGenerator.GenerateEndpoint(inputString);
-        if (result.IsSuccess)
-        {
-            // Register a dynamic endpoint on-the-fly
-            customEndpointsList.Add(new EntpointDTO()
+        var dynamicEndpoint = new RouteEndpointBuilder(
+            async context =>
             {
-                ClassName = result.Value.Item2.Name,
-                Code = result.Value.Item2.Code,
-                Dependencies = result.Value.Item2.Dependencies.Select(t => t.packageId + ":" + t.version.ToString()).ToArray(),
-                URL = result.Value.Item1.Url, 
-                Promt = inputString
-            });
+                using var reader = new StreamReader(context.Request.Body);
+                var requestBodyString = await reader.ReadToEndAsync();
+                await context.Response.BodyWriter.WriteAsync(await result.Value.Item1
+                    .Request(requestBodyString).ReadAsByteArrayAsync());
+            },
+            RoutePatternFactory.Parse(result.Value.Item1.Url),
+            0
+        );
 
-            var dynamicEndpoint = new RouteEndpointBuilder(
-                async context =>
-                {
-                    using var reader = new StreamReader(context.Request.Body);
-                    var requestBodyString = await reader.ReadToEndAsync();
-                    await context.Response.BodyWriter.WriteAsync(await result.Value.Item1
-                        .Request(requestBodyString).ReadAsByteArrayAsync());
-                },
-                RoutePatternFactory.Parse(result.Value.Item1.Url),
-                0
-            );
+        // Add the newly created endpoint to the list
+        dynamicEndpointsList.Add(dynamicEndpoint);
+    }
+});
 
-            // Add the newly created endpoint to the list
-            dynamicEndpointsList.Add(dynamicEndpoint);
-        }
-    });
-
-    endpoints.MapGet("/get-all-endpoints", async context =>
-    {
-        await context.Response.WriteAsJsonAsync(customEndpointsList);
-    });
+app.MapGet("/get-all-endpoints", async context =>
+{
+    await context.Response.WriteAsJsonAsync(customEndpointsList);
 });
 
 // Custom middleware to handle dynamic routing
